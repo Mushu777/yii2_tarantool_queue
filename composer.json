@@ -14,13 +14,13 @@
         }
     ],
     "require": {
-        "yiisoft/yii2": "~2.0.0"
+        "yiisoft/yii2": "~2.0.0",
+        "tass/yii2-tarantool": "*"
     },
     "require-dev": {
         "aws/aws-sdk-php": "~3.0",
         "predis/predis": "~1.0",
         "phpunit/phpunit": "~4.0",
-        "tass/yii2-tarantool": "*",
         "phpunit/dbunit": "~1.0"
     },
     "autoload": {
