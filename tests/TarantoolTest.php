@@ -9,16 +9,59 @@ use yii\tarantool\Connection;
 
 class TarantoolTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var array config params
+     */
+    private static $params;
+
+    /**
+     * @var string current queue
+     */
     private $queue;
+
+    /**
+     * @var string tube name
+     */
     private $tube = 'test_tube';
+
+    /**
+     * @var array default Tarantool connection configuration.
+     */
+    protected $tarantoolConfig = [
+        'host'     => 'localhost',
+        'port'     => '3301',
+        'username' => '',
+        'password' => '',
+        'options'  => [],
+    ];
+    /**
+     * @var Connection Tarantool connection instance.
+     */
+    protected $tarantool;
 
     protected function setUp()
     {
-        $this->tarantool       = $this->getConnection(true, true);
-        $this->queue           = new TarantoolQueue(['tarantool' => $this->tarantool]);
-        $this->queue->queue    = $this->tube;
-        $this->queue->tubeType = 'fifottl';
+        $config = self::getParam('tarantool');
+        if (!empty($config)) {
+            $this->tarantoolConfig = $config;
+        }
+        $this->tarantool = $this->getConnection(true, true);
+        $this->queue     = new TarantoolQueue([
+            'tarantool' => $this->tarantool,
+            'queue'     => $this->tube,
+            'tubeType'  => TarantoolQueue::TYPE_FIFOTTL,
+            'timeout'   => 1
+        ]);
         $this->tarantool->tarantoolClient->evaluate('create_tube(...)', [$this->tube, $this->queue->tubeType]);
+    }
+
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage The "tarantool" property already set.
+     */
+    public function testFalseChangeTarantool()
+    {
+        $this->queue->tarantool = $this->getConnection(true, true);
     }
 
     /**
@@ -221,19 +264,20 @@ class TarantoolTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @var array Tarantool connection configuration.
+     * Returns a test configuration param from /data/config.php
+     *
+     * @param  string $name params name
+     * @param  mixed $default default value to use when param is not set.
+     *
+     * @return mixed  the value of the configuration param
      */
-    protected $tarantoolConfig = [
-        'host'     => 'tarantool.dev.itass.local',
-        'port'     => '3301',
-        'username' => 'developer',
-        'password' => 'developer',
-        'options'  => [],
-    ];
-    /**
-     * @var Connection Tarantool connection instance.
-     */
-    protected $tarantool;
+    public static function getParam($name, $default = null)
+    {
+        if (static::$params === null) {
+            static::$params = require(__DIR__ . '/config.php');
+        }
+        return isset(static::$params[$name]) ? static::$params[$name] : $default;
+    }
 
 
     protected function tearDown()

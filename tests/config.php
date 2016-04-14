@@ -4,9 +4,9 @@ $config = [
     'tarantool' => [
         'host'     => 'localhost',
         'port'     => '3301',
-        'username' => 'test',
-        'password' => 'test',
-        'options'  => [],
+        'username' => '',
+        'password' => '',
+        'options' => [],
     ]
 ];
 
