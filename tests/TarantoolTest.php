@@ -1,11 +1,11 @@
 <?php
 
-
 namespace yiiunit\extensions\queue;
 
 use yii\base\Exception;
 use yii\queue\TarantoolQueue;
 use yii\tarantool\Connection;
+use Yii;
 
 class TarantoolTest extends \PHPUnit_Framework_TestCase
 {
@@ -41,18 +41,22 @@ class TarantoolTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
+        require Yii::getAlias('@yii/tarantool') . '/Connection.php';
         $config = self::getParam('tarantool');
-        if (!empty($config)) {
+        if(!empty($config))
+        {
             $this->tarantoolConfig = $config;
         }
         $this->tarantool = $this->getConnection(true, true);
-        $this->queue     = new TarantoolQueue([
-            'tarantool' => $this->tarantool,
-            'queue'     => $this->tube,
-            'tubeType'  => TarantoolQueue::TYPE_FIFOTTL,
-            'timeout'   => 1
-        ]);
-        $this->tarantool->tarantoolClient->evaluate('create_tube(...)', [$this->tube, $this->queue->tubeType]);
+        $this->queue     = new TarantoolQueue(
+            [
+                'tarantool' => $this->tarantool,
+                'queue'     => $this->tube,
+                'tubeType'  => TarantoolQueue::TYPE_FIFOTTL,
+                'timeout'   => 1
+            ]
+        );
+//        $this->tarantool->tarantoolClient->evaluate('create_tube(...)', [$this->tube, $this->queue->tubeType]);
     }
 
     /**
@@ -116,6 +120,7 @@ class TarantoolTest extends \PHPUnit_Framework_TestCase
         $actualResult = $this->queue->pop($this->tube);
 
         $this->assertEquals($actualResult[0], $returnValue);
+
         return $actualResult[0];
     }
 
@@ -134,11 +139,12 @@ class TarantoolTest extends \PHPUnit_Framework_TestCase
         $actualResult = $this->queue->put($payload, $this->tube, ['ttl' => $ttl]);
         $this->assertEquals($actualResult[0], $returnValue);
         $this->assertEquals($actualResult, $this->queue->peek($this->tube, 0));
+
         return $ttl;
     }
 
     /**
-     * @depends testTTLPush
+     * @depends                  testTTLPush
      * @expectedException Exception
      * @expectedExceptionMessage Query error 32: Task 0 not found
      */
@@ -162,7 +168,6 @@ class TarantoolTest extends \PHPUnit_Framework_TestCase
         $this->queue->purge($this->tube);
         $this->queue->peek($this->tube, 0);
     }
-
 
     /**
      * @expectedException Exception
@@ -203,7 +208,6 @@ class TarantoolTest extends \PHPUnit_Framework_TestCase
         $return    = $this->queue->ack($popResult[0][0]);
         $this->assertEquals($return[0], $returnValue);
         $this->queue->peek($this->tube, $popResult[0][0]);
-
     }
 
     public function testBury()
@@ -234,28 +238,31 @@ class TarantoolTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($return[0], $returnValue);
     }
 
-
     /**
      * @param  boolean $reset whether to clean up the test database
-     * @param  boolean $open whether to open test database
+     * @param  boolean $open  whether to open test database
      *
      * @return \yii\tarantool\Connection
      */
     public function getConnection($reset = false, $open = true)
     {
-        if (!$reset && $this->tarantool) {
+        if(!$reset && $this->tarantool)
+        {
             return $this->tarantool;
         }
         $connection       = new Connection();
         $connection->host = $this->tarantoolConfig['host'];
         $connection->port = $this->tarantoolConfig['port'];
-        if (isset($this->tarantoolConfig['username'])) {
+        if(isset($this->tarantoolConfig['username']))
+        {
             $connection->username = $this->tarantoolConfig['username'];
         }
-        if (isset($this->tarantoolConfig['password'])) {
+        if(isset($this->tarantoolConfig['password']))
+        {
             $connection->password = $this->tarantoolConfig['password'];
         }
-        if ($open) {
+        if($open)
+        {
             $connection->open();
         }
         $this->tarantool = $connection;
@@ -266,23 +273,30 @@ class TarantoolTest extends \PHPUnit_Framework_TestCase
     /**
      * Returns a test configuration param from /data/config.php
      *
-     * @param  string $name params name
-     * @param  mixed $default default value to use when param is not set.
+     * @param  string $name    params name
+     * @param  mixed  $default default value to use when param is not set.
      *
      * @return mixed  the value of the configuration param
      */
     public static function getParam($name, $default = null)
     {
-        if (static::$params === null) {
+        if(static::$params === null)
+        {
             static::$params = require(__DIR__ . '/config.php');
         }
+
         return isset(static::$params[$name]) ? static::$params[$name] : $default;
     }
 
+    public function testEmulateWorker()
+    {
+        
+    }
 
     protected function tearDown()
     {
-        if ($this->tarantool) {
+        if($this->tarantool)
+        {
             $this->tarantool->close();
         }
     }

@@ -1,5 +1,5 @@
 {
-    "name": "yiisoft/yii2-queue",
+    "name": "tass/yii2-queue",
     "description": "The queue extension for the Yii framework",
     "keywords": [
         "yii2",
@@ -15,7 +15,7 @@
     ],
     "require": {
         "yiisoft/yii2": "~2.0.0",
-        "tass/yii2-tarantool": "~1.0"
+        "tass/yii2-tarantool": "dev-core-6_tarantool_extention"
     },
     "require-dev": {
         "aws/aws-sdk-php": "~3.0",
@@ -27,5 +27,8 @@
         "psr-4": {
             "yii\\queue\\": ""
         }
+    },
+    "scripts": {
+        "tass": "tass\\composer\\plugins\\ProjectCommandsPlugin::exec"
     }
 }
