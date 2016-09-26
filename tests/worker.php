@@ -5,7 +5,6 @@ use yii\queue\TarantoolQueue;
 use yii\tarantool\Connection;
 
 define('QUEUE', 32112345);
-
 $tube = 'q1';
 
 function getConnection()
