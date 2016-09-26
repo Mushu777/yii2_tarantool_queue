@@ -2,6 +2,7 @@
 
 namespace yiiunit\extensions\queue;
 
+use stdClass;
 use yii\base\Exception;
 use yii\queue\TarantoolQueue;
 use yii\tarantool\Connection;
@@ -290,7 +291,24 @@ class TarantoolTest extends \PHPUnit_Framework_TestCase
 
     public function testEmulateWorker()
     {
-        
+        define('QUEUE', 32112345);
+
+        $queue = msg_get_queue(QUEUE);
+
+        $obj       = new stdClass();
+        $obj->id   = uniqid();
+        $obj->name = 'foo-bar';
+
+        if(msg_send($queue, 1, $obj))
+        {
+            echo 'added to queueu: ' . PHP_EOL;
+
+            print_r(msg_stat_queue($queue));
+        }
+        else
+        {
+            echo 'added to queueu: ' . PHP_EOL;
+        }
     }
 
     protected function tearDown()
